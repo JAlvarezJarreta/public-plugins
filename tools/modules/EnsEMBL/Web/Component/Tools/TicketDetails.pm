@@ -161,18 +161,33 @@ sub get_job_summary {
         my $details   = $exception->{'message'} ? "Error with message: $exception->{'message'}\n" : "Error:\n";
            $details   = $exception->{'stack'} ? $details : $details.$exception->{'exception'} || 'No details';
 
-        my $helpdesk_details = sprintf 'If the error persists, please contact our <a href="%s" class="modal_link">helpdesk</a> to report this problem.',
-          $hub->url({'type' => 'Help', 'action' => 'Contact', 'subject' => sprintf('Exception in %s Web Tools', $hub->species_defs->ENSEMBL_SITETYPE), 'message' => sprintf("\n\n\n%s with message (%s) (for %s): %s", $exception->{'class'} || 'Exception', $display_message, $url_param, $details)})
-        ;
+        if ($exception && $exception->{'exception'}=~/\[Net::FTP\] Timeout/) {
+          
+          my $helpdesk_details = sprintf 'An error occured while running the job as this tool is currently unavailable. Please try again and if the error persists, please contact our <a href="%s" class="modal_link">helpdesk</a> to report this problem.',
+            $hub->url({'type' => 'Help', 'action' => 'Contact', 'subject' => sprintf('Exception in %s Web Tools', $hub->species_defs->ENSEMBL_SITETYPE), 'message' => sprintf("\n\n\n%s with message (%s) (for %s): %s", $exception->{'class'} || 'Exception', $display_message, $url_param, $details)})
+          ;
 
-        $error_div->append_children({
-          'node_name'   => 'div',
-          'class'       => [ $job_message_class, 'toggleable', 'hidden', 'job_error_message' ],
-          'inner_HTML'  => $details
-        }, {
-          'node_name'   => 'p',
-          'inner_HTML'  => $helpdesk_details
-        });
+          $error_div->append_children({
+            'node_name'   => 'p',
+            'inner_HTML'  => $helpdesk_details
+          });
+
+        } else{
+
+          my $helpdesk_details = sprintf 'If the error persists, please contact our <a href="%s" class="modal_link">helpdesk</a> to report this problem.',
+            $hub->url({'type' => 'Help', 'action' => 'Contact', 'subject' => sprintf('Exception in %s Web Tools', $hub->species_defs->ENSEMBL_SITETYPE), 'message' => sprintf("\n\n\n%s with message (%s) (for %s): %s", $exception->{'class'} || 'Exception', $display_message, $url_param, $details)})
+          ;
+
+          $error_div->append_children({
+            'node_name'   => 'div',
+            'class'       => [ $job_message_class, 'toggleable', 'hidden', 'job_error_message' ],
+            'inner_HTML'  => $details
+          }, {
+            'node_name'   => 'p',
+            'inner_HTML'  => $helpdesk_details
+          });
+
+        }
       }
     }
   }
